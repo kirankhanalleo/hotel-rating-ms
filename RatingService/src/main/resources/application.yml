@@ -2,6 +2,10 @@ server:
   port: 8083
 
 spring:
+  application:
+    name: RatingService
+  config:
+    import: configserver:http://localhost:8085
   datasource:
     url: jdbc:mysql://localhost:3306/hotelms
     username: root

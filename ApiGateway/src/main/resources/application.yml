@@ -2,6 +2,8 @@ server:
   port: 8084
 
 spring:
+  config:
+    import: configserver:http://localhost:8085
   application:
     name: ApiGateway
   cloud:
@@ -22,12 +24,5 @@ spring:
               - Path=/users/**
     discovery:
       enabled: true
-eureka:
-  instance:
-    prefer-ip-address: true
-  client:
-    fetch-registry: true
-    register-with-eureka: true
-    service-url:
-      default-zone: http://localhost:8761/eureka
+
 
