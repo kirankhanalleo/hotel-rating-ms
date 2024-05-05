@@ -24,9 +24,13 @@ public class UserController {
      User newUser = userService.saveUser(user);
      return ResponseEntity.status(HttpStatus.OK).body(newUser);
     }
+    private static int retryCount =1;
     @GetMapping("/{userId}")
     @CircuitBreaker(name="ratingHotelBreaker",fallbackMethod = "ratingHotelFallback")
+    @Retry(name="ratingHotelService", fallbackMethod = "ratingHotelFallback")
     public ResponseEntity<User> getUserById(@PathVariable Long userId) {
+        logger.info("Retry Count: {}",retryCount);
+        retryCount++;
         User user = userService.getUserById(userId);
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
