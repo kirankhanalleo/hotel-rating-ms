@@ -2,11 +2,14 @@ package com.kirankhanal.user.service.controller;
 
 import com.kirankhanal.user.service.entities.User;
 import com.kirankhanal.user.service.services.UserService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 
 @RestController
@@ -14,6 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UserController {
     private final UserService userService;
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/create")
     public ResponseEntity<User> createUser(@RequestBody User user) {
@@ -21,9 +25,19 @@ public class UserController {
      return ResponseEntity.status(HttpStatus.OK).body(newUser);
     }
     @GetMapping("/{userId}")
+    @CircuitBreaker(name="ratingHotelBreaker",fallbackMethod = "ratingHotelFallback")
     public ResponseEntity<User> getUserById(@PathVariable Long userId) {
         User user = userService.getUserById(userId);
         return ResponseEntity.status(HttpStatus.OK).body(user);
+    }
+    public ResponseEntity<User> ratingHotelFallback(Long userId, Exception e){
+        logger.info("Fallback method is executed:: ",e.getMessage());
+        User user = User.builder()
+                .email("dummy@gmail.com")
+                .name("Dummy")
+                .userId(0L)
+                .build();
+        return new ResponseEntity<>(user,HttpStatus.OK);
     }
     @GetMapping
     public ResponseEntity<List<User>> getAllUser(){
